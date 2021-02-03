@@ -12,35 +12,71 @@ class DashBoard extends React.Component {
             sharesTable: [],
             stockChartXValues: {},
             stockChartYValues: {},
-            currentStock: '',
             showTable: false,
             showChart: false,
-            IsArray: [],
             selectedTicker:'',
-            search: '',
             sharesList: [<option key='None' value='None'>Select the ticker</option>]
         }
         //this.fetchStock = this.fetchStock.bind(this);
     }
-    /*componentDidMount() {
-        this.fetchStock();
-    }*/
+    
+    loadStore = async (e) =>{
+        let val  = localStorage.getItem("sharesTable");
+        let val1 = localStorage.getItem("stockChartXValues");
+        let val2 = localStorage.getItem("stockChartYValues");
+        let val3 = localStorage.getItem("showTable");
+        let val4 = localStorage.getItem("showChart");
+        let val5 = localStorage.getItem("selectedTicker");
+        let val6 = localStorage.getItem("sharesList");
+        try {
+            val = JSON.parse(val);
+            val1 = JSON.parse(val1);
+            val2 = JSON.parse(val2);
+            val3 = JSON.parse(val3);
+            val4 = JSON.parse(val4);
+            val5 = JSON.parse(val5);
+            val6 = JSON.parse(val6);
+            await this.setState({ sharesTable: val });
+            await this.setState({ stockChartXValues: val1 });
+            await this.setState({ stockChartYValues: val2 });
+            await this.setState({ showTable: val3 });
+            await this.setState({ showChart: val4 });
+            await this.setState({ selectedTicker: val5 });
+            let dropDownSharesList=[];
+            for (let tName in this.state.stockChartXValues)
+                dropDownSharesList.push(<option selected key={tName} value={tName}>{tName}</option>);
+            await this.setState({ sharesList: dropDownSharesList });
+
+        } catch (e) {
+                    await this.setState({ key: val1 });
+        }
+        
+    }
 
     refreshStore() {
         for (let key in this.state) {
             localStorage.setItem(key, JSON.stringify(this.state[key]));
-        }
+        }    
     }
 
     componentDidMount() {
-        //this.hydrateStateWithLocalStorage();
+        let val = localStorage.getItem("showTable");
+        if (JSON.parse(val)===true) {
+            this.loadStore();
+        }
         window.addEventListener("beforeunload", this.refreshStore.bind(this));
+        localStorage.clear();
+        
     }
 
     componentWillUnmount() {
         window.removeEventListener("beforeunload", this.refreshStore.bind(this));
         this.refreshStore();
     }
+
+   /* componentDidUpdate() {
+        this.refreshStore();
+    }*/
 
     shareSelected = async (e) => {
         e.preventDefault();
@@ -57,7 +93,7 @@ class DashBoard extends React.Component {
         const ticker = document.getElementById("tickerId");
         if (ticker.value!=="") {
             await this.setState({
-                search: ticker.value,
+                //search: ticker.value,
                 selectedTicker: ticker.value,
             });
             
@@ -75,7 +111,8 @@ class DashBoard extends React.Component {
         let month = newDate.getMonth() + 1;
         let year = newDate.getFullYear();
         let tablekey = `${year}-${month<10?`0${month}`:`${month}`}-${date<10?`0${date}`:`${date}`}`;*/
-        let StockSymbol = this.state.search;
+        //let StockSymbol = this.state.search;
+        let StockSymbol = this.state.selectedTicker;
         const pointerToThis = this;
         const API_KEY = '15B5S5ZNVIMAV22S';
         let API_Call = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${StockSymbol}&outputsize=compact&apikey=${API_KEY}`;
