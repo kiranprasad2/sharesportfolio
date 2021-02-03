@@ -25,6 +25,23 @@ class DashBoard extends React.Component {
     /*componentDidMount() {
         this.fetchStock();
     }*/
+
+    refreshStore() {
+        for (let key in this.state) {
+            localStorage.setItem(key, JSON.stringify(this.state[key]));
+        }
+    }
+
+    componentDidMount() {
+        //this.hydrateStateWithLocalStorage();
+        window.addEventListener("beforeunload", this.refreshStore.bind(this));
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("beforeunload", this.refreshStore.bind(this));
+        this.refreshStore();
+    }
+
     shareSelected = async (e) => {
         e.preventDefault();
         //const ticker = document.getElementById("tickerId");
@@ -53,11 +70,11 @@ class DashBoard extends React.Component {
     }
     fetchStock = () => {
 
-        let newDate = new Date((new Date()).valueOf() - 1000*60*60*24);
+        /*let newDate = new Date((new Date()).valueOf() - 1000*60*60*24);
         let date =  newDate.getDate();
         let month = newDate.getMonth() + 1;
         let year = newDate.getFullYear();
-        let tablekey = `${year}-${month<10?`0${month}`:`${month}`}-${date}`;
+        let tablekey = `${year}-${month<10?`0${month}`:`${month}`}-${date<10?`0${date}`:`${date}`}`;*/
         let StockSymbol = this.state.search;
         const pointerToThis = this;
         const API_KEY = '15B5S5ZNVIMAV22S';
@@ -78,12 +95,14 @@ class DashBoard extends React.Component {
             .then(
                 function (data) {
                     console.log(data);
-                                      
+                    //console.log(tablekey); 
+                    let firstkey = true;
                     for (var key in data['Time Series (Daily)']) {
                         stockChartXValuesFunction.push(key);
-                        stockChartYValuesFunction.push(data['Time Series (Daily)'][key]['1. open']);
-                        if(key===tablekey)
+                        stockChartYValuesFunction.push(data['Time Series (Daily)'][key]['4. close']);
+                        if(firstkey===true)//(key===tablekey)
                         {
+                            firstkey = false;
                             open=data['Time Series (Daily)'][key]['1. open']; 
                             close = data['Time Series (Daily)'][key]['4. close'];
                             gsharesTable.push({ ticker: `${StockSymbol}`, open: `${open}`, close: `${close}`, gain: `${close}` - `${open}` });
@@ -105,7 +124,7 @@ class DashBoard extends React.Component {
     }
   
     sharesTableHeader() {
-        if (this.state.showTable == true) {
+        if (this.state.showTable === true) {
             let header = Object.keys(this.state.sharesTable[0])
             return header.map((key, index) => {
                 return <th key={index}>{key.toUpperCase()}</th>
